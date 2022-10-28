@@ -1,8 +1,37 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+
+from expense_tracker_app.expense_tracker.forms import CreateProfileForm
+from expense_tracker_app.expense_tracker.models import Profile
+
+
+def get_profile():
+    profile = Profile.objects.first()
+    if profile:
+        return profile
+    return None
 
 
 def index(request):
-    return render(request, 'home-no-profile.html')
+    profile = get_profile()
+    if not profile:
+        return redirect('create_profile')
+
+    return render(request, 'home-with-profile.html')
+
+
+def create_profile(request):
+    if request.method == 'POST':
+        form = CreateProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = CreateProfileForm()
+    context = {
+        'form': form,
+        'no_profile': True,
+    }
+    return render(request, 'home-no-profile.html', context)
 
 
 def create_expense(request):

@@ -5,10 +5,11 @@ from expense_tracker_app.expense_tracker.validators import MaxFileSizeInMbValida
 
 
 class Profile(models.Model):
-    first_name = models.CharField(max_length=15, validators=(MinLengthValidator(2), only_letters_validator))
-    last_name = models.CharField(max_length=15, validators=(MinLengthValidator(2), only_letters_validator))
+    first_name = models.CharField(verbose_name='First Name', max_length=15, validators=(MinLengthValidator(2), only_letters_validator))
+    last_name = models.CharField(verbose_name='Last Name', max_length=15, validators=(MinLengthValidator(2), only_letters_validator))
     budget = models.FloatField(default=0, validators=(MinValueValidator(0),))
     profile_image = models.ImageField(
+        verbose_name='Profile Image',
         upload_to='profiles/',
         null=True,
         blank=True,
