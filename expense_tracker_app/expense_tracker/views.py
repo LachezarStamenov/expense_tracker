@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 
-from expense_tracker_app.expense_tracker.forms import CreateProfileForm
-from expense_tracker_app.expense_tracker.models import Profile
+from expense_tracker_app.expense_tracker.forms import CreateProfileForm, CreateExpenseForm, EditExpenseForm, \
+    EditProfileForm
+from expense_tracker_app.expense_tracker.models import Profile, Expense
 
 
 def get_profile():
@@ -16,7 +17,16 @@ def index(request):
     if not profile:
         return redirect('create_profile')
 
-    return render(request, 'home-with-profile.html')
+    expenses = Expense.objects.all()
+    budget_left = profile.budget - sum(e.price for e in expenses)
+
+    context = {
+        'profile': profile,
+        'expenses': expenses,
+        'budget_left': budget_left,
+    }
+
+    return render(request, 'home-with-profile.html', context)
 
 
 def create_profile(request):
@@ -35,11 +45,33 @@ def create_profile(request):
 
 
 def create_expense(request):
-    return render(request, 'expense-create.html')
+
+    if request.method == 'POST':
+        form = CreateExpenseForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = CreateExpenseForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'expense-create.html', context)
 
 
 def edit_expense(request, pk):
-    return render(request, 'expense-edit.html')
+    expense = Expense.objects.filter(pk=pk).get()
+    if request.method == 'POST':
+        form = EditExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = EditExpenseForm(instance=expense)
+    context = {
+        'form': form,
+    }
+    return render(request, 'expense-edit.html', context)
 
 
 def delete_expense(request, pk):
@@ -47,11 +79,31 @@ def delete_expense(request, pk):
 
 
 def show_profile(request):
-    return render(request, 'profile.html')
+    profile = Profile.objects.first()
+    total_items = Expense.objects.count()
+    budget_left = profile.budget - sum(e.price for e in Expense.objects.all())
+
+    context = {
+        'profile': profile,
+        'total_items': total_items,
+        'budget_left': budget_left,
+    }
+    return render(request, 'profile.html', context)
 
 
 def edit_profile(request):
-    return render(request, 'profile-edit.html')
+    profile = Profile.objects.first()
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = EditProfileForm(instance=profile)
+    context = {
+        'form': form,
+    }
+    return render(request, 'profile-edit.html', context)
 
 
 def delete_profile(request):

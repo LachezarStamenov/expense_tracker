@@ -18,9 +18,15 @@ class Profile(models.Model):
         ),
     )
 
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
 
 class Expense(models.Model):
     title = models.CharField(max_length=30)
+    description = models.TextField(null=True, blank=True)
     expense_image = models.URLField(null=False, blank=False)
     price = models.FloatField(null=False, blank=False)
-    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['title', 'price']
